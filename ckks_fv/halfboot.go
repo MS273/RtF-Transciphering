@@ -67,16 +67,22 @@ func (hbtp *HalfBootstrapper) HalfBoot(ct *Ciphertext, repack bool) (ct0, ct1 *C
 	log.Println("After CtS    :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
 
 	// Part 2 : SineEval
-	t = time.Now()
+	//t = time.Now()
 	if repack {
+		t = time.Now()
 		hbtp.ckksEvaluator.Rotate(ct1, hbtp.params.Slots()/2, ct1)
+		log.Println("After Rotate :", time.Now().Sub(t))
+		t = time.Now()
 		hbtp.ckksEvaluator.Add(ct0, ct1, ct0)
+		log.Println("After Add    :", time.Now().Sub(t))
+		t = time.Now()
 		ct0, _ = hbtp.evaluateSine(ct0, nil)
+		log.Println("After Sine   :", time.Now().Sub(t))
 		ct1 = nil
 	} else {
 		ct0, ct1 = hbtp.evaluateSine(ct0, ct1)
 	}
-	log.Println("After Sine   :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
+	//log.Println("After Sine   :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
 
 	// Part 3 : Fix scale using diffScaleAfterEvalSine
 	hbtp.ckksEvaluator.MultByConst(ct0, hbtp.diffScaleAfterSineEval, ct0)
@@ -156,29 +162,29 @@ func (hbtp *HalfBootstrapper) modUp(ct *Ciphertext) *Ciphertext {
 func CoeffsToSlotsWithoutRepack(vec *Ciphertext, pDFTInv []*PtDiagMatrix, eval CKKSEvaluator) (ct0, ct1 *Ciphertext) {
 
 	var zV, zVconj *Ciphertext
-	var t time.Time
+	//var t time.Time
 
-	t = time.Now()
+	//t = time.Now()
 	zV = dft(vec, pDFTInv, true, eval)
-	log.Println("After DFT without repack:", time.Now().Sub(t))
+	//log.Println("After DFT without repack:", time.Now().Sub(t))
 
-	t = time.Now()
+	//t = time.Now()
 	zVconj = eval.ConjugateNew(zV)
-	log.Println("After Conjugate without repack:", time.Now().Sub(t))
+	//log.Println("After Conjugate without repack:", time.Now().Sub(t))
 
 	// The real part is stored in ct0
-	t = time.Now()
+	//t = time.Now()
 	ct0 = eval.AddNew(zV, zVconj)
-	log.Println("After Add without repack:", time.Now().Sub(t))
+	//log.Println("After Add without repack:", time.Now().Sub(t))
 
 	// The imaginary part is stored in ct1
-	t = time.Now()
+	//t = time.Now()
 	ct1 = eval.SubNew(zV, zVconj)
-	log.Println("After Sub without repack:", time.Now().Sub(t))
+	//log.Println("After Sub without repack:", time.Now().Sub(t))
 
-	t = time.Now()
+	//t = time.Now()
 	eval.DivByi(ct1, ct1)
-	log.Println("After DivByi without repack:", time.Now().Sub(t))
+	//log.Println("After DivByi without repack:", time.Now().Sub(t))
 
 	zV = nil
 	zVconj = nil
