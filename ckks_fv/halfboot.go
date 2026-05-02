@@ -67,22 +67,16 @@ func (hbtp *HalfBootstrapper) HalfBoot(ct *Ciphertext, repack bool) (ct0, ct1 *C
 	log.Println("After CtS    :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
 
 	// Part 2 : SineEval
-	//t = time.Now()
+	t = time.Now()
 	if repack {
-		t = time.Now()
 		hbtp.ckksEvaluator.Rotate(ct1, hbtp.params.Slots()/2, ct1)
-		log.Println("After Rotate :", time.Now().Sub(t))
-		t = time.Now()
 		hbtp.ckksEvaluator.Add(ct0, ct1, ct0)
-		log.Println("After Add    :", time.Now().Sub(t))
-		t = time.Now()
 		ct0, _ = hbtp.evaluateSine(ct0, nil)
-		log.Println("After Sine   :", time.Now().Sub(t))
 		ct1 = nil
 	} else {
 		ct0, ct1 = hbtp.evaluateSine(ct0, ct1)
 	}
-	//log.Println("After Sine   :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
+	log.Println("After Sine   :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
 
 	// Part 3 : Fix scale using diffScaleAfterEvalSine
 	hbtp.ckksEvaluator.MultByConst(ct0, hbtp.diffScaleAfterSineEval, ct0)
@@ -195,16 +189,22 @@ func CoeffsToSlotsWithoutRepack(vec *Ciphertext, pDFTInv []*PtDiagMatrix, eval C
 // Sine Evaluation ct0 = Q/(2pi) * sin((2pi/Q) * ct0)
 func (hbtp *HalfBootstrapper) evaluateSine(ct0, ct1 *Ciphertext) (*Ciphertext, *Ciphertext) {
 
+	var t time.Time
+
 	ct0.MulScale(hbtp.MessageRatio)
 	hbtp.ckksEvaluator.scale = hbtp.sinescale // Reference scale is changed to the Qi used for the SineEval (which is also close to the new ciphetext scale)
 
+	t = time.Now()
 	ct0 = hbtp.evaluateCheby(ct0)
+	log.Println("evaluateSine After Cheby 1:", time.Now().Sub(t))
 
 	ct0.DivScale(hbtp.MessageRatio * hbtp.postscale / hbtp.params.scale)
 
 	if ct1 != nil {
 		ct1.MulScale(hbtp.MessageRatio)
+		t = time.Now()
 		ct1 = hbtp.evaluateCheby(ct1)
+		log.Println("evaluateSine After Cheby 2:", time.Now().Sub(t))
 		ct1.DivScale(hbtp.MessageRatio * hbtp.postscale / hbtp.params.scale)
 	}
 
