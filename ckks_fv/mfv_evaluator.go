@@ -256,6 +256,7 @@ func (eval *mfvEvaluator) ShallowCopy() MFVEvaluator {
 		rlk:                 eval.rlk,
 		rtks:                eval.rtks,
 		pDcds:               eval.pDcds,
+		permuteNTTIndex: 	 eval.permuteNTTIndex,
 	}
 }
 
