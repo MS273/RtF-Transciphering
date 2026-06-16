@@ -12,6 +12,58 @@ import (
 	"unsafe"
 )
 
+func (eval *mfvEvaluator) MyShallowCopy() MFVEvaluator {
+
+	var err error
+	baseCopy := *eval.mfvEvaluatorBase
+
+	// mfvEvaluatorBaseのringQ, ringPを新調
+	if eval.mfvEvaluatorBase.ringQ != nil {
+		baseCopy.ringQ, err = ring.NewRing(eval.mfvEvaluatorBase.ringQ.N, eval.mfvEvaluatorBase.ringQ.Modulus)
+		if err != nil {
+			panic(fmt.Errorf("MyShallowCopy: failed to recreate ringQ: %w", err))
+		}
+	}
+	if eval.mfvEvaluatorBase.ringP != nil {
+		baseCopy.ringP, err = ring.NewRing(eval.mfvEvaluatorBase.ringP.N, eval.mfvEvaluatorBase.ringP.Modulus)
+		if err != nil {
+			panic(fmt.Errorf("MyShallowCopy: failed to recreate ringP: %w", err))
+		}
+	}
+	if eval.mfvEvaluatorBase.ringQs != nil {
+		baseCopy.ringQs = make([]*ring.Ring, len(eval.mfvEvaluatorBase.ringQs))
+		for i, r := range eval.mfvEvaluatorBase.ringQs {
+			baseCopy.ringQs[i], err = ring.NewRing(r.N, r.Modulus)
+			if err != nil {
+				panic(fmt.Errorf("MyShallowCopy: failed to recreate ringQs[%d]: %w", i, err))
+			}
+		}
+	}
+	if eval.mfvEvaluatorBase.ringQMul != nil {
+		baseCopy.ringQMul, err = ring.NewRing(eval.mfvEvaluatorBase.ringQMul.N, eval.mfvEvaluatorBase.ringQMul.Modulus)
+		if err != nil {	
+			panic(fmt.Errorf("MyShallowCopy: failed to recreate ringQMul: %w", err))
+		}
+	}
+
+	modCount := len(eval.params.qi)
+	baseconverterQ1Q2s := make([]*ring.FastBasisExtender, modCount)
+	for i := range baseconverterQ1Q2s {
+		baseconverterQ1Q2s[i] = ring.NewFastBasisExtender(baseCopy.ringQ, baseCopy.ringP)
+	}
+
+	return &mfvEvaluator{
+		mfvEvaluatorBase:    &baseCopy,
+		mfvEvaluatorBuffers: newMFVEvaluatorBuffer(&baseCopy),
+		baseconverterQ1Q2s:  baseconverterQ1Q2s,
+		baseconverterQ1P:    eval.baseconverterQ1P.ShallowCopy(),
+		rlk:                 eval.rlk,
+		rtks:                eval.rtks,
+		pDcds:               eval.pDcds,
+		permuteNTTIndex:  	 eval.permuteNTTIndex,
+	}
+}
+
 // MFVEvaluator is an interface implementing the public methodes of the eval.
 type MFVEvaluator interface {
 	Add(op0, op1 Operand, ctOut *Ciphertext)
