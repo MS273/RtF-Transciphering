@@ -42,7 +42,7 @@ func (hbtp *HalfBootstrapper) HalfBoot(ct *Ciphertext, repack bool) (ct0, ct1 *C
 		// and does an integer constant mult by round((Q0/Delta_m)/ctscle)
 
 		if hbtp.prescale < ct.Scale() {
-			panic("ciphetext scale > Q[0]/(Q[0]/Delta_m)")
+			panic("ciphertext scale > Q[0]/(Q[0]/Delta_m)")
 		}
 		hbtp.ckksEvaluator.ScaleUp(ct, math.Round(hbtp.prescale/ct.Scale()), ct)
 	}

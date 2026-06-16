@@ -10,8 +10,11 @@ import (
 
 // ShallowCopy 自分で追加
 func (hbtp *HalfBootstrapper) ShallowCopy() *HalfBootstrapper {
+	copyEval := hbtp.ckksEvaluator.ShallowCopy().(*ckksEvaluator)
+	copyEval.ctxpool = NewCiphertextCKKS(hbtp.params, 1, hbtp.params.MaxLevel(), 0)
+	
 	return &HalfBootstrapper{
-		ckksEvaluator:      hbtp.ckksEvaluator.ShallowCopy().(*ckksEvaluator),
+		ckksEvaluator:      copyEval,
 		HalfBootParameters: hbtp.HalfBootParameters,
 		BootstrappingKey: hbtp.BootstrappingKey,
 
