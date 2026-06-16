@@ -92,6 +92,7 @@ type MFVEvaluator interface {
 	RotateRowsNew(ct0 *Ciphertext) (ctOut *Ciphertext)
 	InnerSum(ct0 *Ciphertext, ctOut *Ciphertext)
 	ShallowCopy() MFVEvaluator
+	MyShallowCopy() MFVEvaluator
 	WithKey(EvaluationKey) MFVEvaluator
 
 	// Modulus Switch
