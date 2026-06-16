@@ -8,6 +8,37 @@ import (
 	"github.com/ldsec/lattigo/v2/utils"
 )
 
+// ShallowCopy 自分で追加
+func (hbtp *HalfBootstrapper) ShallowCopy() *HalfBootstrapper {
+	return &HalfBootstrapper{
+		ckksEvaluator:        hbtp.ckksEvaluator.ShallowCopy(),
+		HalfBootParameters: hbtp.HalfBootParameters,
+		BootstrappingKey: hbtp.BootstrappingKey,
+
+		params: hbtp.params.Copy(),
+		dslots: hbtp.dslots,
+		logdslots: hbtp.logdslots,
+
+		encoder: NewCKKSEncoder(hbtp.params),
+
+		prescale: hbtp.prescale,
+		postscale: hbtp.postscale,
+		sinescale: hbtp.sinescale,
+		sqrt2pi: hbtp.sqrt2pi,
+		scFac: hbtp.scFac,
+		sineEvalPoly: hbtp.sineEvalPoly.Copy(),
+		arcSinePoly: hbtp.arcSinePoly.Copy(),
+
+		coeffsToSlotsDiffScale: hbtp.coeffsToSlotsDiffScale,
+		diffScaleAfterSineEval: hbtp.diffScaleAfterSineEval,
+		pDFTInvWithoutRepack: hbtp.pDFTInvWithoutRepack,
+
+		rotKeyIndex: hbtp.rotKeyIndex,
+	}
+}
+
+
+
 // HalfBootstrapper is a struct to stores a memory pool the plaintext matrices
 // the polynomial approximation and the keys for the half-bootstrapping.
 type HalfBootstrapper struct {
