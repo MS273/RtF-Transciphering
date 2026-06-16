@@ -11,7 +11,7 @@ import (
 // ShallowCopy 自分で追加
 func (hbtp *HalfBootstrapper) ShallowCopy() *HalfBootstrapper {
 	return &HalfBootstrapper{
-		ckksEvaluator:        hbtp.ckksEvaluator.ShallowCopy(),
+		ckksEvaluator:      hbtp.ckksEvaluator.ShallowCopy().(*ckksEvaluator),
 		HalfBootParameters: hbtp.HalfBootParameters,
 		BootstrappingKey: hbtp.BootstrappingKey,
 
@@ -26,8 +26,8 @@ func (hbtp *HalfBootstrapper) ShallowCopy() *HalfBootstrapper {
 		sinescale: hbtp.sinescale,
 		sqrt2pi: hbtp.sqrt2pi,
 		scFac: hbtp.scFac,
-		sineEvalPoly: hbtp.sineEvalPoly.Copy(),
-		arcSinePoly: hbtp.arcSinePoly.Copy(),
+		sineEvalPoly: hbtp.sineEvalPoly,
+		arcSinePoly: hbtp.arcSinePoly,
 
 		coeffsToSlotsDiffScale: hbtp.coeffsToSlotsDiffScale,
 		diffScaleAfterSineEval: hbtp.diffScaleAfterSineEval,
