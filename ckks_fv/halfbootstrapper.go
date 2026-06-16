@@ -10,11 +10,21 @@ import (
 
 // ShallowCopy 自分で追加
 func (hbtp *HalfBootstrapper) ShallowCopy() *HalfBootstrapper {
-	copyEval := hbtp.ckksEvaluator.ShallowCopy().(*ckksEvaluator)
-	copyEval.ctxpool = NewCiphertextCKKS(hbtp.params, 1, hbtp.params.MaxLevel(), 0)
+	evalCopy := hbtp.ckksEvaluator.ShallowCopy().(*ckksEvaluator)
+	evalCopy.ctxpool = NewCiphertextCKKS(hbtp.params, 1, hbtp.params.MaxLevel(), 0)
+
+	var pDFTInvCopy []*PtDiagMatrix
+    if hbtp.pDFTInvWithoutRepack != nil {
+        pDFTInvCopy = make([]*PtDiagMatrix, len(hbtp.pDFTInvWithoutRepack))
+        for i, mat := range hbtp.pDFTInvWithoutRepack {
+            if mat != nil {
+                pDFTInvCopy[i] = mat.CopyNew()
+            }
+        }
+    }
 
 	return &HalfBootstrapper{
-		ckksEvaluator:      copyEval,
+		ckksEvaluator:      evalCopy,
 		HalfBootParameters: hbtp.HalfBootParameters,
 		BootstrappingKey: &BootstrappingKey{hbtp.BootstrappingKey.Rlk, hbtp.BootstrappingKey.Rtks},
 
@@ -34,7 +44,7 @@ func (hbtp *HalfBootstrapper) ShallowCopy() *HalfBootstrapper {
 
 		coeffsToSlotsDiffScale: hbtp.coeffsToSlotsDiffScale,
 		diffScaleAfterSineEval: hbtp.diffScaleAfterSineEval,
-		pDFTInvWithoutRepack: hbtp.pDFTInvWithoutRepack,
+		pDFTInvWithoutRepack: pDFTInvCopy,
 
 		rotKeyIndex: hbtp.rotKeyIndex,
 	}
