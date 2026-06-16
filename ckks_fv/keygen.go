@@ -348,7 +348,7 @@ func (keygen *keyGenerator) GenRotationKeysForRotations(ks []int, includeConjuga
 	if includeConjugate {
 		galEls = append(galEls, keygen.params.GaloisElementForRowRotation())
 	}
-	return keygen.GenRotationKeysParallel(galEls, sk, 3)
+	return keygen.GenRotationKeys(galEls, sk)
 }
 
 // GenRotationIndexesForInnerSumNaive generates the rotation indexes for the
