@@ -7,7 +7,60 @@ import (
 	"github.com/ldsec/lattigo/v2/ring"
 	"github.com/ldsec/lattigo/v2/rlwe"
 	"github.com/ldsec/lattigo/v2/utils"
+
+	//----------------------------------
+	"sync"
+	"runtime"
 )
+
+// GenRotationKeysParallel 自分で追加
+func (keygen *keyGenerator) GenRotationKeysParallel(galEls []uint64, sk *SecretKey, maxNumWorkers int) (rks *RotationKeySet) {
+	var wg sync.WaitGroup
+	numWorkers := runtime.GOMAXPROCS(0)
+	if numWorkers > maxNumWorkers {
+		numWorkers = maxNumWorkers
+	}
+
+	jobs := make(chan int, len(galEls))
+	for i := 0; i < len(galEls); i++ {
+		jobs <- i
+	}
+	close(jobs)
+
+	rks = NewRotationKeySet(keygen.params, galEls)
+	for w := 0; w < numWorkers; w++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			localKeygen := keygen.ShallowCopy()
+			for i := range jobs {
+				galEl := galEls[i]
+				localKeygen.genrotKey(sk.Value, localKeygen.params.InverseGaloisElement(galEl), rks.Keys[galEl])
+			}
+		}()
+	}
+	wg.Wait()
+	return rks
+}
+
+// ShallowCopy 自分で追加
+// ShallowCopy creates a shallow copy of this evaluator in which the read-only data-structures are
+// shared with the receiver.
+func (keygen *keyGenerator) ShallowCopy() *keyGenerator {
+	prng, err := utils.NewPRNG()
+	if err != nil {
+		panic(err)
+	}
+
+	return &keyGenerator{
+		params:          keygen.params.Copy(),
+		ringQP:          keygen.ringQP,
+		pBigInt:         keygen.pBigInt,
+		polypool:        [2]*ring.Poly{keygen.ringQP.NewPoly(), keygen.ringQP.NewPoly()},
+		gaussianSampler: ring.NewGaussianSampler(prng),
+		uniformSampler:  ring.NewUniformSampler(prng, keygen.ringQP),
+	}
+}
 
 // KeyGenerator is an interface implementing the methods of the KeyGenerator.
 type KeyGenerator interface {
@@ -23,6 +76,8 @@ type KeyGenerator interface {
 	GenSwitchingKeyForGalois(galEl uint64, sk *SecretKey) (swk *SwitchingKey)
 
 	GenRotationKeys(galEls []uint64, sk *SecretKey) (rks *RotationKeySet)
+	//----------------------------------------------------------------------
+	GenRotationKeysParallel(galEls []uint64, sk *SecretKey, maxNumWorkers int) (rks *RotationKeySet)
 
 	GenRotationKeysForRotations(ks []int, includeConjugate bool, sk *SecretKey) (rks *RotationKeySet)
 
@@ -293,7 +348,7 @@ func (keygen *keyGenerator) GenRotationKeysForRotations(ks []int, includeConjuga
 	if includeConjugate {
 		galEls = append(galEls, keygen.params.GaloisElementForRowRotation())
 	}
-	return keygen.GenRotationKeys(galEls, sk)
+	return keygen.GenRotationKeysParallel(galEls, sk, 3)
 }
 
 // GenRotationIndexesForInnerSumNaive generates the rotation indexes for the
