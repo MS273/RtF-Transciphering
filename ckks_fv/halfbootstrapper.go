@@ -17,8 +17,27 @@ func (hbtp *HalfBootstrapper) ShallowCopy() *HalfBootstrapper {
     if hbtp.pDFTInvWithoutRepack != nil {
         pDFTInvCopy = make([]*PtDiagMatrix, len(hbtp.pDFTInvWithoutRepack))
         for i, mat := range hbtp.pDFTInvWithoutRepack {
-            if mat != nil {
-                pDFTInvCopy[i] = mat.CopyNew()
+			if mat != nil {
+				clonedMat := &PtDiagMatrix{
+					LogSlots:   mat.LogSlots,
+					N1:         mat.N1,
+					Level:      mat.Level,
+					Scale:      mat.Scale,
+					Vec:        make(map[int][2]*ring.Poly, len(mat.Vec)), // 新しいマップを確保
+					naive:      mat.naive,
+					isGaussian: mat.isGaussian,
+				}
+				for k, v := range mat.Vec {
+					var poly0, poly1 *ring.Poly
+					if v[0] != nil {
+						poly0 = v[0].CopyNew()
+					}
+					if v[1] != nil {
+						poly1 = v[1].CopyNew()
+					}
+					clonedMat.Vec[k] = [2]*ring.Poly{poly0, poly1}
+				}
+				pDFTInvCopy[i] = clonedMat
             }
         }
     }
