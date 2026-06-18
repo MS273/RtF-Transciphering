@@ -10,7 +10,6 @@ import (
 
 	//----------------------------------
 	"sync"
-	"runtime"
 )
 
 // GenRotationKeysParallel 自分で追加
