@@ -14,12 +14,8 @@ import (
 )
 
 // GenRotationKeysParallel 自分で追加
-func (keygen *keyGenerator) GenRotationKeysParallel(galEls []uint64, sk *SecretKey, maxNumWorkers int) (rks *RotationKeySet) {
+func (keygen *keyGenerator) GenRotationKeysParallel(galEls []uint64, sk *SecretKey, numWorkers int) (rks *RotationKeySet) {
 	var wg sync.WaitGroup
-	numWorkers := runtime.GOMAXPROCS(0)
-	if numWorkers > maxNumWorkers {
-		numWorkers = maxNumWorkers
-	}
 
 	jobs := make(chan int, len(galEls))
 	for i := 0; i < len(galEls); i++ {
@@ -41,6 +37,18 @@ func (keygen *keyGenerator) GenRotationKeysParallel(galEls []uint64, sk *SecretK
 	}
 	wg.Wait()
 	return rks
+}
+
+// GenRotationKeysForRotationsParallel 自分で追加
+func (keygen *keyGenerator) GenRotationKeysForRotationsParallel(ks []int, includeConjugate bool, sk *SecretKey, numWorkers int) (rks *RotationKeySet) {
+	galEls := make([]uint64, len(ks), len(ks)+1)
+	for i, k := range ks {
+		galEls[i] = keygen.params.GaloisElementForColumnRotationBy(k)
+	}
+	if includeConjugate {
+		galEls = append(galEls, keygen.params.GaloisElementForRowRotation())
+	}
+	return keygen.GenRotationKeysParallel(galEls, sk, numWorkers)
 }
 
 // ShallowCopy 自分で追加
@@ -76,10 +84,12 @@ type KeyGenerator interface {
 	GenSwitchingKeyForGalois(galEl uint64, sk *SecretKey) (swk *SwitchingKey)
 
 	GenRotationKeys(galEls []uint64, sk *SecretKey) (rks *RotationKeySet)
-	//----------------------------------------------------------------------
-	GenRotationKeysParallel(galEls []uint64, sk *SecretKey, maxNumWorkers int) (rks *RotationKeySet)
-
 	GenRotationKeysForRotations(ks []int, includeConjugate bool, sk *SecretKey) (rks *RotationKeySet)
+	//----------------------------------------------------------------------
+	GenRotationKeysParallel(galEls []uint64, sk *SecretKey, numWorkers int) (rks *RotationKeySet)
+	GenRotationKeysForRotationsParallel(ks []int, includeConjugate bool, sk *SecretKey, numWorkers int) (rks *RotationKeySet)
+	// ---------------------------------------------------------------------
+
 
 	GenRotationIndexesForBootstrapping(logSlots int, btpParams *BootstrappingParameters) []int
 	GenRotationIndexesForHalfBoot(logSlots int, hbtpParams *HalfBootParameters) []int
@@ -348,7 +358,7 @@ func (keygen *keyGenerator) GenRotationKeysForRotations(ks []int, includeConjuga
 	if includeConjugate {
 		galEls = append(galEls, keygen.params.GaloisElementForRowRotation())
 	}
-	return keygen.GenRotationKeysParallel(galEls, sk, 3)
+	return keygen.GenRotationKeys(galEls, sk)
 }
 
 // GenRotationIndexesForInnerSumNaive generates the rotation indexes for the
