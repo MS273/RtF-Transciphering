@@ -13,67 +13,6 @@ import (
 )
 
 // ShallowCopy 自分で追加
-/*func (hbtp *HalfBootstrapper) ShallowCopy() *HalfBootstrapper {
-	evalCopy := hbtp.ckksEvaluator.ShallowCopy().(*ckksEvaluator)
-	evalCopy.ctxpool = NewCiphertextCKKS(hbtp.params, 1, hbtp.params.MaxLevel(), 0)
-
-	var pDFTInvCopy []*PtDiagMatrix
-    if hbtp.pDFTInvWithoutRepack != nil {
-        pDFTInvCopy = make([]*PtDiagMatrix, len(hbtp.pDFTInvWithoutRepack))
-        for i, mat := range hbtp.pDFTInvWithoutRepack {
-			if mat != nil {
-				clonedMat := &PtDiagMatrix{
-					LogSlots:   mat.LogSlots,
-					N1:         mat.N1,
-					Level:      mat.Level,
-					Scale:      mat.Scale,
-					Vec:        make(map[int][2]*ring.Poly, len(mat.Vec)), // 新しいマップを確保
-					naive:      mat.naive,
-					isGaussian: mat.isGaussian,
-				}
-				for k, v := range mat.Vec {
-					var poly0, poly1 *ring.Poly
-					if v[0] != nil {
-						poly0 = v[0].CopyNew()
-					}
-					if v[1] != nil {
-						poly1 = v[1].CopyNew()
-					}
-					clonedMat.Vec[k] = [2]*ring.Poly{poly0, poly1}
-				}
-				pDFTInvCopy[i] = clonedMat
-            }
-        }
-    }
-
-	return &HalfBootstrapper{
-		ckksEvaluator:      evalCopy,
-		HalfBootParameters: hbtp.HalfBootParameters,
-		BootstrappingKey: &BootstrappingKey{hbtp.BootstrappingKey.Rlk, hbtp.BootstrappingKey.Rtks},
-
-		params: hbtp.params.Copy(),
-		dslots: hbtp.dslots,
-		logdslots: hbtp.logdslots,
-
-		encoder: NewCKKSEncoder(hbtp.params),
-
-		prescale: hbtp.prescale,
-		postscale: hbtp.postscale,
-		sinescale: hbtp.sinescale,
-		sqrt2pi: hbtp.sqrt2pi,
-		scFac: hbtp.scFac,
-		sineEvalPoly: hbtp.sineEvalPoly,
-		arcSinePoly: hbtp.arcSinePoly,
-
-		coeffsToSlotsDiffScale: hbtp.coeffsToSlotsDiffScale,
-		diffScaleAfterSineEval: hbtp.diffScaleAfterSineEval,
-		pDFTInvWithoutRepack: pDFTInvCopy,
-
-		rotKeyIndex: hbtp.rotKeyIndex,
-	}
-}*/
-
-// ShallowCopy 自分で追加（完全監査クリア版）
 func (hbtp *HalfBootstrapper) ShallowCopy() *HalfBootstrapper {
 	var err error
 
