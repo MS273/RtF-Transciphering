@@ -47,9 +47,13 @@ func (encryptor *ckksEncryptor) MyShallowCopy() *ckksEncryptor {
 		poolP: poolP,
 
 		baseconverter: bc,
-		gaussianSampler: ring.NewGaussianSampler(prng),
-		ternarySampler:  ring.NewTernarySampler(prng, q, 0.5, false),
-		uniformSampler:  ring.NewUniformSampler(prng, q),
+		gaussianSampler: encryptor.gaussianSampler,
+		ternarySampler:  encryptor.ternarySampler,
+		uniformSampler:  encryptor.uniformSampler,
+
+		//gaussianSampler: ring.NewGaussianSampler(prng),
+		//ternarySampler:  ring.NewTernarySampler(prng, q, 0.5, false),
+		//uniformSampler:  ring.NewUniformSampler(prng, q),
 	}
 }
 

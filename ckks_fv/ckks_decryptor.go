@@ -5,8 +5,18 @@ import (
 	"github.com/ldsec/lattigo/v2/utils"
 )
 
+func (decryptor *ckksDecryptor) MyShallowCopy() CKKSDecryptor {
+	return &ckksDecryptor{
+		params: decryptor.params,
+		ringQ: decryptor.ringQ,
+		sk: decryptor.sk,
+	}
+}
+
 // CKKSDecryptor is an interface for decrypting Ciphertexts. A Decryptor stores the secret-key.
 type CKKSDecryptor interface {
+	MyShallowCopy() CKKSDecryptor
+
 	// DecryptNew decrypts the ciphertext and returns a newly created
 	// plaintext. A Horner method is used for evaluating the decryption.
 	// The level of the output plaintext is ciphertext.Level().
