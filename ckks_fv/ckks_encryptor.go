@@ -22,10 +22,10 @@ func (encryptor *ckksEncryptor) MyShallowCopy() *ckksEncryptor {
 		panic(err)
 	}
 
-	prng, err := utils.NewPRNG()
+	/*prng, err := utils.NewPRNG()
 	if err != nil {
 		panic(err)
-	}
+	}*/
 
 	var bc *ring.FastBasisExtender
 	var poolP [3]*ring.Poly
