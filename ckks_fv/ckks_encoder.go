@@ -10,6 +10,56 @@ import (
 	"github.com/ldsec/lattigo/v2/utils"
 )
 
+// MyShallowCopy 自分で追加
+func (encoder *ckksEncoder) MyShallowCopy() *ckksEncoder {
+	prng, err := utils.NewPRNG()
+	if err != nil {
+		panic(err)
+	}
+
+	var q *ring.Ring
+	if q, err = ring.NewRing(encoder.params.N(), encoder.params.qi); err != nil {
+		panic(err)
+	}
+
+	var p *ring.Ring
+	if encoder.params.PiCount() != 0 {
+		if p, err = ring.NewRing(encoder.params.N(), encoder.params.pi); err != nil {
+			panic(err)
+		}
+	}
+
+	var ringT *ring.Ring
+	if ringT, err = ring.NewRing(encoder.params.N(), []uint64{encoder.params.plainModulus}); err != nil {
+		panic(err)
+	}
+
+	return &ckksEncoder{
+		params:          encoder.params,
+		ringQ:           q,
+		ringP:           p,
+		ringT:           ringT,
+		bigintChain:     encoder.bigintChain,
+		bigintCoeffs:    make([]*big.Int, encoder.m>>1),
+		qHalf:           ring.NewUint(0),
+		polypool:        q.NewPoly(),
+		m:               encoder.m,
+		rotGroup:        encoder.rotGroup,
+		gaussianSampler: ring.NewGaussianSampler(prng),
+	}
+}
+
+// MyShallowCopy 自分で追加
+func (encoder *encoderComplex128) MyShallowCopy() CKKSEncoder {
+	return &encoderComplex128{
+		ckksEncoder:     *encoder.ckksEncoder.MyShallowCopy(),
+		values:      make([]complex128, len(encoder.values)),
+		valuesfloat: make([]float64, len(encoder.valuesfloat)),
+		roots:       encoder.roots,
+	}
+}
+
+
 // GaloisGen is an integer of order N/2 modulo M and that spans Z_M with the integer -1.
 // The j-th ring automorphism takes the root zeta to zeta^(5j).
 const GaloisGen int = 5
@@ -18,6 +68,8 @@ var pi = "3.14159265358979323846264338327950288419716939937510582097494459230781
 
 // CKKSEncoder is an interface implenting the encoding algorithms.
 type CKKSEncoder interface {
+	MyShallowCopy() CKKSEncoder
+
 	EncodeComplex(plaintext *Plaintext, values []complex128, logSlots int)
 	EncodeComplexNew(values []complex128, logSlots int) (plaintext *Plaintext)
 	EncodeComplexAtLvlNew(level int, values []complex128, logSlots int) (plaintext *Plaintext)

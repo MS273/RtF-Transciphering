@@ -64,7 +64,8 @@ func (hbtp *HalfBootstrapper) ShallowCopy() *HalfBootstrapper {
 		dslots:    hbtp.dslots,
 		logdslots: hbtp.logdslots,
 
-		encoder: NewCKKSEncoder(hbtp.params),
+		//encoder: NewCKKSEncoder(hbtp.params),
+		encoder: hbtp.encoder.MyShallowCopy(),
 
 		prescale:     hbtp.prescale,
 		postscale:    hbtp.postscale,
