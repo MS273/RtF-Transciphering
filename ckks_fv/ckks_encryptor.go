@@ -5,11 +5,61 @@ import (
 	"github.com/ldsec/lattigo/v2/utils"
 )
 
+func (encryptor *pkCKKSEncryptor) MyShallowCopy() CKKSEncryptor {
+	return &pkCKKSEncryptor{*encryptor.ckksEncryptor.MyShallowCopy(), encryptor.pk}
+}
+
+func (encryptor *skCKKSEncryptor) MyShallowCopy() CKKSEncryptor {
+	return &skCKKSEncryptor{*encryptor.ckksEncryptor.MyShallowCopy(), encryptor.sk}
+}
+
+// MyShallowCopy 自分で追加
+func (encryptor *ckksEncryptor) MyShallowCopy() *ckksEncryptor {
+
+	var q, p *ring.Ring
+	var err error
+	if q, err = ring.NewRing(encryptor.params.N(), encryptor.params.qi); err != nil {
+		panic(err)
+	}
+
+	prng, err := utils.NewPRNG()
+	if err != nil {
+		panic(err)
+	}
+
+	var bc *ring.FastBasisExtender
+	var poolP [3]*ring.Poly
+	if encryptor.params.PiCount() != 0 {
+		if p, err = ring.NewRing(encryptor.params.N(), encryptor.params.pi); err != nil {
+			panic(err)
+		}
+		bc = encryptor.baseconverter.ShallowCopy()
+		poolP = [3]*ring.Poly{p.NewPoly(), p.NewPoly(), p.NewPoly()}
+	}
+
+	return &ckksEncryptor{
+		params: encryptor.params,
+
+		ringQ: q,
+		ringP: p,
+
+		poolQ: [3]*ring.Poly{q.NewPoly(), q.NewPoly(), q.NewPoly()},
+		poolP: poolP,
+
+		baseconverter: bc,
+		gaussianSampler: ring.NewGaussianSampler(prng),
+		ternarySampler:  ring.NewTernarySampler(prng, q, 0.5, false),
+		uniformSampler:  ring.NewUniformSampler(prng, q),
+	}
+}
+
 // CKKSEncryptor in an interface for encryptors
 //
 // encrypt with pk : ciphertext = [pk[0]*u + m + e_0, pk[1]*u + e_1]
 // encrypt with sk : ciphertext = [-a*sk + m + e, a]
 type CKKSEncryptor interface {
+	MyShallowCopy() CKKSEncryptor
+
 	// EncryptNew encrypts the input plaintext using the stored key and returns
 	// the result on a newly created ciphertext. The encryption is done by first
 	// encrypting zero in QP, dividing by P and then adding the plaintext.
