@@ -12,8 +12,8 @@ import (
 	"unsafe"
 )
 
-// ShallowCopy 自分で追加
-func (hbtp *HalfBootstrapper) ShallowCopy() *HalfBootstrapper {
+// MyShallowCopy 自分で追加
+func (hbtp *HalfBootstrapper) MyShallowCopy() *HalfBootstrapper {
 	var err error
 
 	if hbtp == nil {
@@ -26,13 +26,13 @@ func (hbtp *HalfBootstrapper) ShallowCopy() *HalfBootstrapper {
 	if hbtp.ckksEvaluatorBase.ringQ != nil {
 		baseCopy.ringQ, err = ring.NewRing(hbtp.ckksEvaluatorBase.ringQ.N, hbtp.ckksEvaluatorBase.ringQ.Modulus)
 		if err != nil {
-			panic(fmt.Errorf("ShallowCopy: failed to recreate ringQ: %w", err))
+			panic(fmt.Errorf("MyShallowCopy: failed to recreate ringQ: %w", err))
 		}
 	}
 	if hbtp.ckksEvaluatorBase.ringP != nil {
 		baseCopy.ringP, err = ring.NewRing(hbtp.ckksEvaluatorBase.ringP.N, hbtp.ckksEvaluatorBase.ringP.Modulus)
 		if err != nil {
-			panic(fmt.Errorf("ShallowCopy: failed to recreate ringP: %w", err))
+			panic(fmt.Errorf("MyShallowCopy: failed to recreate ringP: %w", err))
 		}
 	}
 
@@ -356,7 +356,7 @@ func (s *HbtpCrossSpy) CheckContamination(afterClean *HbtpCrossSpy) {
 	}
 
 	if !contaminated {
-		fmt.Println("✅ [PERFECT ISOLATION] ShallowCopy されたインスタンス同士は、裏で一切繋がっていません！完全隔離されています。")
+		fmt.Println("✅ [PERFECT ISOLATION] MyShallowCopy されたインスタンス同士は、裏で一切繋がっていません！完全隔離されています。")
 	}
 	fmt.Println("=====================================================\n")
 }

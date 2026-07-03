@@ -10,6 +10,41 @@ import (
 	"github.com/ldsec/lattigo/v2/utils"
 )
 
+// MyShallowCopy 自分で追加
+func (encoder *mfvEncoder) MyShallowCopy() MFVEncoder {
+
+	var ringP, ringT, ringTSmall *ring.Ring
+	var err error
+
+	context := newMultiLevelContext(encoder.params)
+
+	if ringP, err = ring.NewRing(encoder.params.N(), encoder.params.pi); err != nil {
+		panic(err)
+	}
+
+	if ringT, err = ring.NewRing(encoder.params.N(), []uint64{encoder.params.plainModulus}); err != nil {
+		panic(err)
+	}
+
+	if ringTSmall, err = ring.NewRing(encoder.params.FVSlots(), []uint64{encoder.params.plainModulus}); err != nil {
+		panic(err)
+	}
+
+	return &mfvEncoder{
+		params:            encoder.params,
+		ringP:             ringP,
+		ringT:             ringT,
+		ringTSmall:        ringTSmall,
+		indexMatrix:       encoder.indexMatrix,
+		indexMatrixSmall:  encoder.indexMatrixSmall,
+		deltaPMont:        encoder.deltaPMont,
+		multiLevelContext: context,
+		tmpPoly:           ringT.NewPoly(),
+		tmpPtRt:           NewPlaintextRingT(encoder.params),
+		tmpPolySmall:      ringTSmall.NewPoly(),
+	}
+}
+
 // GaloisGen is an integer of order N=2^d modulo M=2N and that spans Z_M with the integer -1.
 // The j-th ring automorphism takes the root zeta to zeta^(5j).
 // const GaloisGen int = 5
@@ -37,6 +72,8 @@ import (
 //  -----------------------------------------------------------------------
 //
 type MFVEncoder interface {
+	MyShallowCopy() MFVEncoder
+
 	EncodeUint(coeffs []uint64, pt *Plaintext)
 	EncodeUintRingT(coeffs []uint64, pt *PlaintextRingT)
 	EncodeUintMul(coeffs []uint64, pt *PlaintextMul)
