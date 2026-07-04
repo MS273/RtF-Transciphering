@@ -5,11 +5,85 @@ import (
 	"github.com/ldsec/lattigo/v2/utils"
 )
 
+func (encryptor *pkEncryptor) MyShallowCopy() MFVEncryptor {
+	return &pkEncryptor{*encryptor.encryptor.MyShallowCopy(), encryptor.pk}
+}
+
+func (encryptor *skEncryptor) MyShallowCopy() MFVEncryptor {
+	return &skEncryptor{*encryptor.encryptor.MyShallowCopy(), encryptor.sk}
+}
+
+// MyShallowCopy 自分で追加
+// params以外の全要素はnewと同じままなので不完全．未使用．
+func (encryptor *encryptor) MyShallowCopy() *encryptor {
+
+	var ringQ, ringP *ring.Ring
+	var ringQPs []*ring.Ring
+	var err error
+
+	if ringQ, err = ring.NewRing(encryptor.params.N(), encryptor.params.qi); err != nil {
+		panic(err)
+	}
+
+	prng, err := utils.NewPRNG()
+	if err != nil {
+		panic(err)
+	}
+
+	var baseconverter *ring.FastBasisExtender
+	var polypool, poolQ, poolP [3]*ring.Poly
+	var ternarySamplerMontgomeryQP *ring.TernarySampler
+
+	if len(encryptor.params.pi) != 0 {
+		if ringP, err = ring.NewRing(encryptor.params.N(), encryptor.params.pi); err != nil {
+			panic(err)
+		}
+		baseconverter = ring.NewFastBasisExtender(ringQ, ringP)
+
+		modCount := len(encryptor.params.qi)
+		ringQPs = make([]*ring.Ring, modCount)
+
+		for i := 0; i < modCount; i++ {
+			moduli := make([]uint64, i+1)
+			copy(moduli, encryptor.params.qi[:i+1])
+			if ringQPs[i], err = ring.NewRing(encryptor.params.N(), append(moduli, encryptor.params.pi...)); err != nil {
+				panic(err)
+			}
+		}
+
+		ringQPmax := ringQPs[modCount-1]
+		ternarySamplerMontgomeryQP = ring.NewTernarySampler(prng, ringQPmax, 0.5, true)
+		polypool = [3]*ring.Poly{ringQPmax.NewPoly(), ringQPmax.NewPoly(), ringQPmax.NewPoly()}
+		poolQ = [3]*ring.Poly{ringQ.NewPoly(), ringQ.NewPoly(), ringQ.NewPoly()}
+		poolP = [3]*ring.Poly{ringP.NewPoly(), ringP.NewPoly(), ringP.NewPoly()}
+	} else {
+		polypool = [3]*ring.Poly{ringQ.NewPoly(), ringQ.NewPoly(), ringQ.NewPoly()}
+	}
+
+	return encryptor{
+		params:                     encryptor.params,
+		ringQ:                      ringQ,
+		ringP:                      ringP,
+		ringQPs:                    ringQPs,
+		polypool:                   polypool,
+		poolQ:                      poolQ,
+		poolP:                      poolP,
+		baseconverter:              baseconverter,
+		gaussianSampler:            ring.NewGaussianSampler(prng),
+		uniformSamplerQ:            ring.NewUniformSampler(prng, ringQ),
+		ternarySamplerQ:            ring.NewTernarySampler(prng, ringQ, 0.5, false),
+		ternarySamplerMontgomeryQ:  ring.NewTernarySampler(prng, ringQ, 0.5, true),
+		ternarySamplerMontgomeryQP: ternarySamplerMontgomeryQP,
+	}
+}
+
 // MFVEncryptor in an interface for encryptors
 //
 // encrypt with pk : ciphertext = [pk[0]*u + m + e_0, pk[1]*u + e_1]
 // encrypt with sk : ciphertext = [-a*sk + m + e, a]
 type MFVEncryptor interface {
+	MyShallowCopy() MFVEncryptor
+
 	// EncryptNew encrypts the input plaintext using the stored key and returns
 	// the result on a newly created ciphertext. The encryption is done by first
 	// encrypting zero in QP, dividing by P and then adding the plaintext.

@@ -14,6 +14,9 @@ func (encryptor *skCKKSEncryptor) MyShallowCopy() CKKSEncryptor {
 }
 
 // MyShallowCopy 自分で追加
+// Sampler類は元のままだと上手くいくがまずい気がする
+// baseconverterをShallowCopyではなく新調するとSampler類を新調した場合でも上手くいくかも？
+// ただそうするとparams以外の全要素がnewと同等になってしまうので，MyShallowCopyの意味がなくなるかも
 func (encryptor *ckksEncryptor) MyShallowCopy() *ckksEncryptor {
 
 	var q, p *ring.Ring

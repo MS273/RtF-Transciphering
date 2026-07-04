@@ -27,7 +27,7 @@ func (keygen *keyGenerator) GenRotationKeysParallel(galEls []uint64, sk *SecretK
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			localKeygen := keygen.ShallowCopy()
+			localKeygen := keygen.MyShallowCopy()
 			for i := range jobs {
 				galEl := galEls[i]
 				localKeygen.genrotKey(sk.Value, localKeygen.params.InverseGaloisElement(galEl), rks.Keys[galEl])
@@ -50,10 +50,10 @@ func (keygen *keyGenerator) GenRotationKeysForRotationsParallel(ks []int, includ
 	return keygen.GenRotationKeysParallel(galEls, sk, numWorkers)
 }
 
-// ShallowCopy 自分で追加
-// ShallowCopy creates a shallow copy of this evaluator in which the read-only data-structures are
+// MyShallowCopy 自分で追加
+// MyShallowCopy creates a shallow copy of this evaluator in which the read-only data-structures are
 // shared with the receiver.
-func (keygen *keyGenerator) ShallowCopy() *keyGenerator {
+func (keygen *keyGenerator) MyShallowCopy() *keyGenerator {
 	prng, err := utils.NewPRNG()
 	if err != nil {
 		panic(err)
