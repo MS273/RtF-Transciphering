@@ -60,7 +60,7 @@ func (encryptor *encryptor) MyShallowCopy() *encryptor {
 		polypool = [3]*ring.Poly{ringQ.NewPoly(), ringQ.NewPoly(), ringQ.NewPoly()}
 	}
 
-	return encryptor{
+	return &encryptor{
 		params:                     encryptor.params,
 		ringQ:                      ringQ,
 		ringP:                      ringP,
