@@ -15,13 +15,13 @@ func (encryptor *skEncryptor) MyShallowCopy() MFVEncryptor {
 
 // MyShallowCopy 自分で追加
 // params以外の全要素はnewと同じままなので不完全．未使用．
-func (encryptor *encryptor) MyShallowCopy() *encryptor {
+func (enc *encryptor) MyShallowCopy() *encryptor {
 
 	var ringQ, ringP *ring.Ring
 	var ringQPs []*ring.Ring
 	var err error
 
-	if ringQ, err = ring.NewRing(encryptor.params.N(), encryptor.params.qi); err != nil {
+	if ringQ, err = ring.NewRing(enc.params.N(), enc.params.qi); err != nil {
 		panic(err)
 	}
 
@@ -34,19 +34,19 @@ func (encryptor *encryptor) MyShallowCopy() *encryptor {
 	var polypool, poolQ, poolP [3]*ring.Poly
 	var ternarySamplerMontgomeryQP *ring.TernarySampler
 
-	if len(encryptor.params.pi) != 0 {
-		if ringP, err = ring.NewRing(encryptor.params.N(), encryptor.params.pi); err != nil {
+	if len(enc.params.pi) != 0 {
+		if ringP, err = ring.NewRing(enc.params.N(), enc.params.pi); err != nil {
 			panic(err)
 		}
 		baseconverter = ring.NewFastBasisExtender(ringQ, ringP)
 
-		modCount := len(encryptor.params.qi)
+		modCount := len(enc.params.qi)
 		ringQPs = make([]*ring.Ring, modCount)
 
 		for i := 0; i < modCount; i++ {
 			moduli := make([]uint64, i+1)
-			copy(moduli, encryptor.params.qi[:i+1])
-			if ringQPs[i], err = ring.NewRing(encryptor.params.N(), append(moduli, encryptor.params.pi...)); err != nil {
+			copy(moduli, enc.params.qi[:i+1])
+			if ringQPs[i], err = ring.NewRing(enc.params.N(), append(moduli, enc.params.pi...)); err != nil {
 				panic(err)
 			}
 		}
@@ -61,7 +61,7 @@ func (encryptor *encryptor) MyShallowCopy() *encryptor {
 	}
 
 	return &encryptor{
-		params:                     encryptor.params,
+		params:                     enc.params,
 		ringQ:                      ringQ,
 		ringP:                      ringP,
 		ringQPs:                    ringQPs,
