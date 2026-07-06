@@ -32,12 +32,13 @@ func (keygen *keyGenerator) GenRotationKeysParallel(galEls []uint64, sk *SecretK
 			defer wg.Done()
 			defer runtime.GC()
 			fmt.Println("workerID ", workerID, ": start")
-			var localKeygen *keyGenerator
+			localKeygen := NewKeyGenerator(keygen.params)
+			/*var localKeygen *keyGenerator
 			if(workerID == numWorkers - 1) {
 				localKeygen = keygen
 			} else {
 				localKeygen = keygen.myShallowCopy()
-			}
+			}*/
 			for i := range jobs {
 				galEl := galEls[i]
 				localKeygen.genrotKey(sk.Value, localKeygen.params.InverseGaloisElement(galEl), rks.Keys[galEl])
