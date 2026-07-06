@@ -34,8 +34,8 @@ func (keygen *keyGenerator) GenRotationKeysParallel(galEls []uint64, sk *SecretK
 			fmt.Println("workerID ", workerID, ": start")
 			
 			var localKeygen *keyGenerator
-			localKeygen = NewKeyGenerator(keygen.params)
-			if(workerID == numWorkers - 1) {
+			localKeygen = NewKeyGenerator(keygen.params).(*keyGenerator)
+			/*if(workerID == numWorkers - 1) {
 				localKeygen = keygen
 			} else {
 				localKeygen = keygen.myShallowCopy()
