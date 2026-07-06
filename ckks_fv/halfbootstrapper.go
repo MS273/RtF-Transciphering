@@ -42,14 +42,12 @@ func (hbtp *HalfBootstrapper) MyShallowCopy() *HalfBootstrapper {
 	return &HalfBootstrapper{
 		ckksEvaluator:      evalCopy,
 		HalfBootParameters: hbtp.HalfBootParameters,
-		//BootstrappingKey:   &BootstrappingKey{Rlk: hbtp.BootstrappingKey.Rlk, Rtks: hbtp.BootstrappingKey.Rtks},
 		BootstrappingKey: 	hbtp.BootstrappingKey,
 
 		params:    hbtp.params,
 		dslots:    hbtp.dslots,
 		logdslots: hbtp.logdslots,
 
-		//encoder: NewCKKSEncoder(hbtp.params),
 		encoder: hbtp.encoder.MyShallowCopy(),
 
 		prescale:     hbtp.prescale,
@@ -62,7 +60,6 @@ func (hbtp *HalfBootstrapper) MyShallowCopy() *HalfBootstrapper {
 
 		coeffsToSlotsDiffScale: hbtp.coeffsToSlotsDiffScale,
 		diffScaleAfterSineEval: hbtp.diffScaleAfterSineEval,
-		//pDFTInvWithoutRepack:   pDFTInvCopy,
 		pDFTInvWithoutRepack:   hbtp.pDFTInvWithoutRepack,
 
 		rotKeyIndex: hbtp.rotKeyIndex,
