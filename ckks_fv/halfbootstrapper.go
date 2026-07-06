@@ -13,7 +13,7 @@ import (
 )
 
 func (hbtp *HalfBootstrapper) MyShallowCopy() *HalfBootstrapper {
-	var err error
+	//var err error
 
 	if hbtp == nil {
 		return nil
