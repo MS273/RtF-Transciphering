@@ -27,7 +27,7 @@ func (eval *mfvEvaluator) MyShallowCopy() MFVEvaluator {
 		mfvEvaluatorBase:    baseCopy,
 		mfvEvaluatorBuffers: newMFVEvaluatorBuffer(baseCopy),
 		baseconverterQ1Q2s:  baseconverterQ1Q2s,
-		baseconverterQ1P:    ring.NewFastBasisExtender(eval.ringQ, eval.ringP),
+		baseconverterQ1P:    ring.NewFastBasisExtender(baseCopy.ringQ, baseCopy.ringP),
 		rlk:                 eval.rlk,
 		rtks:                eval.rtks,
 		pDcds:               eval.pDcds,
