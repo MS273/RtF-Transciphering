@@ -10,6 +10,7 @@ import (
 
 	//----------------------------------
 	"sync"
+	"runtime"
 )
 
 // GenRotationKeysParallel 自分で追加
@@ -28,6 +29,8 @@ func (keygen *keyGenerator) GenRotationKeysParallel(galEls []uint64, sk *SecretK
 		workerID := w
 		go func() {
 			defer wg.Done()
+			defer runtime.GC()
+			fmt.Println("workerID ", workerID, ": start")
 			var localKeygen *keyGenerator
 			if(workerID == numWorkers - 1) {
 				localKeygen = keygen
