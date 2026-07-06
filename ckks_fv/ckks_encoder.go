@@ -51,6 +51,17 @@ func (encoder *ckksEncoder) MyShallowCopy() *ckksEncoder {
 
 // MyShallowCopy 自分で追加
 func (encoder *encoderComplex128) MyShallowCopy() CKKSEncoder {
+
+	/*
+	var angle float64
+	roots := make([]complex128, ckksEncoder.m+1)
+	for i := 0; i < ckksEncoder.m; i++ {
+		angle = 2 * 3.141592653589793 * float64(i) / float64(ckksEncoder.m)
+
+		roots[i] = complex(math.Cos(angle), math.Sin(angle))
+	}
+	roots[ckksEncoder.m] = roots[0]*/
+
 	return &encoderComplex128{
 		ckksEncoder:     *encoder.ckksEncoder.MyShallowCopy(),
 		values:      make([]complex128, len(encoder.values)),
