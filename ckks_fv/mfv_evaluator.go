@@ -14,7 +14,7 @@ import (
 
 func (eval *mfvEvaluator) MyShallowCopy() MFVEvaluator {
 
-	var err error
+	//var err error
 	baseCopy := newMFVEvaluatorPrecomp(eval.params)
 
 	modCount := len(eval.params.qi)
@@ -24,8 +24,8 @@ func (eval *mfvEvaluator) MyShallowCopy() MFVEvaluator {
 	}
 
 	return &mfvEvaluator{
-		mfvEvaluatorBase:    &baseCopy,
-		mfvEvaluatorBuffers: newMFVEvaluatorBuffer(&baseCopy),
+		mfvEvaluatorBase:    baseCopy,
+		mfvEvaluatorBuffers: newMFVEvaluatorBuffer(baseCopy),
 		baseconverterQ1Q2s:  baseconverterQ1Q2s,
 		baseconverterQ1P:    eval.baseconverterQ1P.ShallowCopy(),
 		rlk:                 eval.rlk,
