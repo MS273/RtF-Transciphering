@@ -12,8 +12,65 @@ import (
 	"unsafe"
 )
 
-// MyShallowCopy 自分で追加
 func (hbtp *HalfBootstrapper) MyShallowCopy() *HalfBootstrapper {
+	var err error
+
+	if hbtp == nil {
+		return nil
+	}
+
+	baseCopy := newCKKSEvaluatorBase(hbtp.params)
+	
+	// baseconverterも新調
+	var baseconverterCopy *ring.FastBasisExtender
+	if hbtp.params.PiCount() != 0 {
+		baseconverterCopy = ring.NewFastBasisExtender(baseCopy.ringQ, baseCopy.ringP)
+	}
+
+	buffCopy := newCKKSEvaluatorBuffers(baseCopy)
+	buffCopy.ctxpool = NewCiphertextCKKS(hbtp.params, 1, hbtp.params.MaxLevel(), 0)
+
+	evalCopy := &ckksEvaluator{
+		ckksEvaluatorBase:    baseCopy,
+		ckksEvaluatorBuffers: buffCopy,
+		rlk:                  hbtp.ckksEvaluator.rlk,
+		rtks:                 hbtp.ckksEvaluator.rtks,
+		permuteNTTIndex:      hbtp.ckksEvaluator.permuteNTTIndex,
+		baseconverter:        baseconverterCopy,
+	}
+
+	return &HalfBootstrapper{
+		ckksEvaluator:      evalCopy,
+		HalfBootParameters: hbtp.HalfBootParameters,
+		//BootstrappingKey:   &BootstrappingKey{Rlk: hbtp.BootstrappingKey.Rlk, Rtks: hbtp.BootstrappingKey.Rtks},
+		BootstrappingKey: 	hbtp.BootstrappingKey,
+
+		params:    hbtp.params,
+		dslots:    hbtp.dslots,
+		logdslots: hbtp.logdslots,
+
+		//encoder: NewCKKSEncoder(hbtp.params),
+		encoder: hbtp.encoder.MyShallowCopy(),
+
+		prescale:     hbtp.prescale,
+		postscale:    hbtp.postscale,
+		sinescale:    hbtp.sinescale,
+		sqrt2pi:      hbtp.sqrt2pi,
+		scFac:        hbtp.scFac,
+		sineEvalPoly: hbtp.sineEvalPoly,
+		arcSinePoly:  hbtp.arcSinePoly,
+
+		coeffsToSlotsDiffScale: hbtp.coeffsToSlotsDiffScale,
+		diffScaleAfterSineEval: hbtp.diffScaleAfterSineEval,
+		//pDFTInvWithoutRepack:   pDFTInvCopy,
+		pDFTInvWithoutRepack:   hbtp.pDFTInvWithoutRepack,
+
+		rotKeyIndex: hbtp.rotKeyIndex,
+	}
+}
+
+// MyShallowCopy 自分で追加
+/*func (hbtp *HalfBootstrapper) MyShallowCopy() *HalfBootstrapper {
 	var err error
 
 	if hbtp == nil {
@@ -82,7 +139,7 @@ func (hbtp *HalfBootstrapper) MyShallowCopy() *HalfBootstrapper {
 
 		rotKeyIndex: hbtp.rotKeyIndex,
 	}
-}
+}*/
 
 
 
