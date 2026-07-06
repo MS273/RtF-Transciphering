@@ -32,8 +32,9 @@ func (keygen *keyGenerator) GenRotationKeysParallel(galEls []uint64, sk *SecretK
 			defer wg.Done()
 			defer runtime.GC()
 			fmt.Println("workerID ", workerID, ": start")
-			localKeygen := NewKeyGenerator(keygen.params)
-			/*var localKeygen *keyGenerator
+			
+			var localKeygen *keyGenerator
+			localKeygen = NewKeyGenerator(keygen.params)
 			if(workerID == numWorkers - 1) {
 				localKeygen = keygen
 			} else {
