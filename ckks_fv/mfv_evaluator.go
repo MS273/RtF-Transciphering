@@ -12,7 +12,7 @@ import (
 	"unsafe"
 )
 
-/*func (eval *mfvEvaluator) MyShallowCopy() MFVEvaluator {
+func (eval *mfvEvaluator) MyShallowCopy() MFVEvaluator {
 
 	//var err error
 	baseCopy := newMFVEvaluatorPrecomp(eval.params)
@@ -20,7 +20,7 @@ import (
 	modCount := len(eval.params.qi)
 	baseconverterQ1Q2s := make([]*ring.FastBasisExtender, modCount)
 	for i := range baseconverterQ1Q2s {
-		baseconverterQ1Q2s[i] = ring.NewFastBasisExtender(baseCopy.ringQ, baseCopy.ringP)
+		baseconverterQ1Q2s[i] = ring.NewFastBasisExtender(baseCopy.ringQs[i], baseCopy.ringQMul)
 	}
 
 	return &mfvEvaluator{
@@ -33,9 +33,9 @@ import (
 		pDcds:               eval.pDcds,
 		permuteNTTIndex:  	 eval.permuteNTTIndex,
 	}
-}*/
+}
 
-func (eval *mfvEvaluator) MyShallowCopy() MFVEvaluator {
+/*func (eval *mfvEvaluator) MyShallowCopy() MFVEvaluator {
 
 	var err error
 	baseCopy := *eval.mfvEvaluatorBase
@@ -85,7 +85,7 @@ func (eval *mfvEvaluator) MyShallowCopy() MFVEvaluator {
 		pDcds:               eval.pDcds,
 		permuteNTTIndex:  	 eval.permuteNTTIndex,
 	}
-}
+}*/
 
 // MFVEvaluator is an interface implementing the public methodes of the eval.
 type MFVEvaluator interface {
