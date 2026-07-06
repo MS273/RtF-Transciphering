@@ -37,7 +37,7 @@ func (encoder *mfvEncoder) MyShallowCopy() MFVEncoder {
 		ringTSmall:        ringTSmall,
 		indexMatrix:       encoder.indexMatrix,
 		indexMatrixSmall:  encoder.indexMatrixSmall,
-		deltaPMont:        encoder.deltaPMont,
+		deltaPMont:        GenLiftParams(ringP, encoder.params.plainModulus),
 		multiLevelContext: context,
 		tmpPoly:           ringT.NewPoly(),
 		tmpPtRt:           NewPlaintextRingT(encoder.params),
