@@ -2,7 +2,7 @@ package ckks_fv
 
 import (
 	"math"
-	"log"
+	//"log"
 	"time"
 	"github.com/ldsec/lattigo/v2/ring"
 )
@@ -13,7 +13,7 @@ import (
 // can be used to do a scale matching.
 func (hbtp *HalfBootstrapper) HalfBoot(ct *Ciphertext, repack bool) (ct0, ct1 *Ciphertext) {
 
-	var t time.Time
+	//var t time.Time
 	// var ct0, ct1 *Ciphertext
 
 	// Drops the level to 1
@@ -189,7 +189,7 @@ func CoeffsToSlotsWithoutRepack(vec *Ciphertext, pDFTInv []*PtDiagMatrix, eval C
 // Sine Evaluation ct0 = Q/(2pi) * sin((2pi/Q) * ct0)
 func (hbtp *HalfBootstrapper) evaluateSine(ct0, ct1 *Ciphertext) (*Ciphertext, *Ciphertext) {
 
-	var t time.Time
+	//var t time.Time
 
 	ct0.MulScale(hbtp.MessageRatio)
 	hbtp.ckksEvaluator.scale = hbtp.sinescale // Reference scale is changed to the Qi used for the SineEval (which is also close to the new ciphetext scale)

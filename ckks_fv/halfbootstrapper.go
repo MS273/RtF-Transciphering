@@ -7,9 +7,6 @@ import (
 	"github.com/ldsec/lattigo/v2/ckks/bettersine"
 	"github.com/ldsec/lattigo/v2/utils"
 	"github.com/ldsec/lattigo/v2/ring"
-
-	"reflect"
-	"unsafe"
 )
 
 // MyShallowCopy 自分で追加
