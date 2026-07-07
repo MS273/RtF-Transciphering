@@ -3,7 +3,7 @@ package ckks_fv
 import (
 	"math"
 	//"log"
-	"time"
+	//"time"
 	"github.com/ldsec/lattigo/v2/ring"
 )
 
@@ -48,7 +48,7 @@ func (hbtp *HalfBootstrapper) HalfBoot(ct *Ciphertext, repack bool) (ct0, ct1 *C
 	}
 
 	// ModUp ct_{Q_0} -> ct_{Q_L}
-	t = time.Now()
+	//t = time.Now()
 	ct = hbtp.modUp(ct)
 	//log.Println("After ModUp  :", time.Now().Sub(t), ct.Level(), ct.Scale())
 
@@ -56,18 +56,18 @@ func (hbtp *HalfBootstrapper) HalfBoot(ct *Ciphertext, repack bool) (ct0, ct1 *C
 	hbtp.ckksEvaluator.ScaleUp(ct, math.Round(hbtp.postscale/ct.Scale()), ct)
 
 	//SubSum X -> (N/dslots) * Y^dslots
-	t = time.Now()
+	//t = time.Now()
 	ct = hbtp.subSum(ct)
 	//log.Println("After SubSum :", time.Now().Sub(t), ct.Level(), ct.Scale())
 	// Part 1 : Coeffs to slots
 
-	t = time.Now()
+	//t = time.Now()
 	// ct0, ct1 = CoeffsToSlots(ct, hbtp.pDFTInv, hbtp.ckksEvaluator)
 	ct0, ct1 = CoeffsToSlotsWithoutRepack(ct, hbtp.pDFTInvWithoutRepack, hbtp.ckksEvaluator)
 	//log.Println("After CtS    :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
 
 	// Part 2 : SineEval
-	t = time.Now()
+	//t = time.Now()
 	if repack {
 		hbtp.ckksEvaluator.Rotate(ct1, hbtp.params.Slots()/2, ct1)
 		hbtp.ckksEvaluator.Add(ct0, ct1, ct0)
@@ -194,7 +194,7 @@ func (hbtp *HalfBootstrapper) evaluateSine(ct0, ct1 *Ciphertext) (*Ciphertext, *
 	ct0.MulScale(hbtp.MessageRatio)
 	hbtp.ckksEvaluator.scale = hbtp.sinescale // Reference scale is changed to the Qi used for the SineEval (which is also close to the new ciphetext scale)
 
-	t = time.Now()
+	//t = time.Now()
 	ct0 = hbtp.evaluateCheby(ct0)
 	//log.Println("evaluateSine After Cheby 1:", time.Now().Sub(t))
 
@@ -202,7 +202,7 @@ func (hbtp *HalfBootstrapper) evaluateSine(ct0, ct1 *Ciphertext) (*Ciphertext, *
 
 	if ct1 != nil {
 		ct1.MulScale(hbtp.MessageRatio)
-		t = time.Now()
+		//t = time.Now()
 		ct1 = hbtp.evaluateCheby(ct1)
 		//log.Println("evaluateSine After Cheby 2:", time.Now().Sub(t))
 		ct1.DivScale(hbtp.MessageRatio * hbtp.postscale / hbtp.params.scale)
