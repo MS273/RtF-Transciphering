@@ -50,7 +50,7 @@ func (hbtp *HalfBootstrapper) HalfBoot(ct *Ciphertext, repack bool) (ct0, ct1 *C
 	// ModUp ct_{Q_0} -> ct_{Q_L}
 	t = time.Now()
 	ct = hbtp.modUp(ct)
-	log.Println("After ModUp  :", time.Now().Sub(t), ct.Level(), ct.Scale())
+	//log.Println("After ModUp  :", time.Now().Sub(t), ct.Level(), ct.Scale())
 
 	// Brings the ciphertext scale to sineQi/(Q0/scale) if its under
 	hbtp.ckksEvaluator.ScaleUp(ct, math.Round(hbtp.postscale/ct.Scale()), ct)
@@ -58,13 +58,13 @@ func (hbtp *HalfBootstrapper) HalfBoot(ct *Ciphertext, repack bool) (ct0, ct1 *C
 	//SubSum X -> (N/dslots) * Y^dslots
 	t = time.Now()
 	ct = hbtp.subSum(ct)
-	log.Println("After SubSum :", time.Now().Sub(t), ct.Level(), ct.Scale())
+	//log.Println("After SubSum :", time.Now().Sub(t), ct.Level(), ct.Scale())
 	// Part 1 : Coeffs to slots
 
 	t = time.Now()
 	// ct0, ct1 = CoeffsToSlots(ct, hbtp.pDFTInv, hbtp.ckksEvaluator)
 	ct0, ct1 = CoeffsToSlotsWithoutRepack(ct, hbtp.pDFTInvWithoutRepack, hbtp.ckksEvaluator)
-	log.Println("After CtS    :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
+	//log.Println("After CtS    :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
 
 	// Part 2 : SineEval
 	t = time.Now()
@@ -76,7 +76,7 @@ func (hbtp *HalfBootstrapper) HalfBoot(ct *Ciphertext, repack bool) (ct0, ct1 *C
 	} else {
 		ct0, ct1 = hbtp.evaluateSine(ct0, ct1)
 	}
-	log.Println("After Sine   :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
+	//log.Println("After Sine   :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
 
 	// Part 3 : Fix scale using diffScaleAfterEvalSine
 	hbtp.ckksEvaluator.MultByConst(ct0, hbtp.diffScaleAfterSineEval, ct0)
@@ -196,7 +196,7 @@ func (hbtp *HalfBootstrapper) evaluateSine(ct0, ct1 *Ciphertext) (*Ciphertext, *
 
 	t = time.Now()
 	ct0 = hbtp.evaluateCheby(ct0)
-	log.Println("evaluateSine After Cheby 1:", time.Now().Sub(t))
+	//log.Println("evaluateSine After Cheby 1:", time.Now().Sub(t))
 
 	ct0.DivScale(hbtp.MessageRatio * hbtp.postscale / hbtp.params.scale)
 
@@ -204,7 +204,7 @@ func (hbtp *HalfBootstrapper) evaluateSine(ct0, ct1 *Ciphertext) (*Ciphertext, *
 		ct1.MulScale(hbtp.MessageRatio)
 		t = time.Now()
 		ct1 = hbtp.evaluateCheby(ct1)
-		log.Println("evaluateSine After Cheby 2:", time.Now().Sub(t))
+		//log.Println("evaluateSine After Cheby 2:", time.Now().Sub(t))
 		ct1.DivScale(hbtp.MessageRatio * hbtp.postscale / hbtp.params.scale)
 	}
 

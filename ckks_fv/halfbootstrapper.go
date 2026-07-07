@@ -12,6 +12,7 @@ import (
 	"unsafe"
 )
 
+// MyShallowCopy 自分で追加
 func (hbtp *HalfBootstrapper) MyShallowCopy() *HalfBootstrapper {
 	//var err error
 
@@ -65,80 +66,6 @@ func (hbtp *HalfBootstrapper) MyShallowCopy() *HalfBootstrapper {
 		rotKeyIndex: hbtp.rotKeyIndex,
 	}
 }
-
-// MyShallowCopy 自分で追加
-/*func (hbtp *HalfBootstrapper) MyShallowCopy() *HalfBootstrapper {
-	var err error
-
-	if hbtp == nil {
-		return nil
-	}
-
-	baseCopy := *hbtp.ckksEvaluator.ckksEvaluatorBase
-
-	// ckksEvaluatorBaseのringQ, ringPを新調
-	if hbtp.ckksEvaluatorBase.ringQ != nil {
-		baseCopy.ringQ, err = ring.NewRing(hbtp.ckksEvaluatorBase.ringQ.N, hbtp.ckksEvaluatorBase.ringQ.Modulus)
-		if err != nil {
-			panic(fmt.Errorf("MyShallowCopy: failed to recreate ringQ: %w", err))
-		}
-	}
-	if hbtp.ckksEvaluatorBase.ringP != nil {
-		baseCopy.ringP, err = ring.NewRing(hbtp.ckksEvaluatorBase.ringP.N, hbtp.ckksEvaluatorBase.ringP.Modulus)
-		if err != nil {
-			panic(fmt.Errorf("MyShallowCopy: failed to recreate ringP: %w", err))
-		}
-	}
-
-	// baseconverterも新調
-	var baseconverterCopy *ring.FastBasisExtender
-	if hbtp.params.PiCount() != 0 {
-		baseconverterCopy = ring.NewFastBasisExtender(baseCopy.ringQ, baseCopy.ringP)
-	}
-
-	buffCopy := newCKKSEvaluatorBuffers(&baseCopy)
-	buffCopy.ctxpool = NewCiphertextCKKS(hbtp.params, 1, hbtp.params.MaxLevel(), 0)
-
-	evalCopy := &ckksEvaluator{
-		ckksEvaluatorBase:    &baseCopy,
-		ckksEvaluatorBuffers: buffCopy,
-		rlk:                  hbtp.ckksEvaluator.rlk,
-		rtks:                 hbtp.ckksEvaluator.rtks,
-		permuteNTTIndex:      hbtp.ckksEvaluator.permuteNTTIndex,
-		baseconverter:        baseconverterCopy,
-	}
-
-	return &HalfBootstrapper{
-		ckksEvaluator:      evalCopy,
-		HalfBootParameters: hbtp.HalfBootParameters,
-		//BootstrappingKey:   &BootstrappingKey{Rlk: hbtp.BootstrappingKey.Rlk, Rtks: hbtp.BootstrappingKey.Rtks},
-		BootstrappingKey: 	hbtp.BootstrappingKey,
-
-		params:    hbtp.params,
-		dslots:    hbtp.dslots,
-		logdslots: hbtp.logdslots,
-
-		//encoder: NewCKKSEncoder(hbtp.params),
-		encoder: hbtp.encoder.MyShallowCopy(),
-
-		prescale:     hbtp.prescale,
-		postscale:    hbtp.postscale,
-		sinescale:    hbtp.sinescale,
-		sqrt2pi:      hbtp.sqrt2pi,
-		scFac:        hbtp.scFac,
-		sineEvalPoly: hbtp.sineEvalPoly,
-		arcSinePoly:  hbtp.arcSinePoly,
-
-		coeffsToSlotsDiffScale: hbtp.coeffsToSlotsDiffScale,
-		diffScaleAfterSineEval: hbtp.diffScaleAfterSineEval,
-		//pDFTInvWithoutRepack:   pDFTInvCopy,
-		pDFTInvWithoutRepack:   hbtp.pDFTInvWithoutRepack,
-
-		rotKeyIndex: hbtp.rotKeyIndex,
-	}
-}*/
-
-
 
 // HalfBootstrapper is a struct to stores a memory pool the plaintext matrices
 // the polynomial approximation and the keys for the half-bootstrapping.
@@ -325,92 +252,4 @@ func (hbtp *HalfBootstrapper) genSinePoly() {
 	for i := range hbtp.sineEvalPoly.coeffs {
 		hbtp.sineEvalPoly.coeffs[i] *= complex(hbtp.sqrt2pi, 0)
 	}
-}
-
-
-
-
-
-
-
-// HbtpCrossSpy は、構造体の最深部の「値」を記録するスパイ
-type HbtpCrossSpy struct {
-	snapshot map[string]interface{}
-}
-
-// NewHbtpCrossSpy は、HalfBootstrapper の全最深部データを記録する
-func NewHbtpCrossSpy(hbtp *HalfBootstrapper) *HbtpCrossSpy {
-	spy := &HbtpCrossSpy{snapshot: make(map[string]interface{})}
-	if hbtp == nil {
-		return spy
-	}
-	spy.scan(reflect.ValueOf(hbtp).Elem(), "HalfBootstrapper")
-	return spy
-}
-
-func (s *HbtpCrossSpy) scan(v reflect.Value, path string) {
-	if !v.IsValid() { return }
-
-	for v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
-		if v.IsNil() {
-			s.snapshot[path+" (nil)"] = nil
-			return
-		}
-		v = v.Elem()
-	}
-
-	switch v.Kind() {
-	case reflect.Struct:
-		t := v.Type()
-		for i := 0; i < v.NumField(); i++ {
-			f := v.Field(i)
-			fName := t.Field(i).Name
-			// 小文字フィールドも強制展開
-			f = reflect.NewAt(f.Type(), unsafe.Pointer(f.UnsafeAddr())).Elem()
-			s.scan(f, path+"."+fName)
-		}
-	case reflect.Slice, reflect.Array:
-		s.snapshot[path+"_len"] = v.Len()
-		maxLen := v.Len()
-		if maxLen > 8 { maxLen = 8 }
-		for i := 0; i < maxLen; i++ {
-			s.scan(v.Index(i), fmt.Sprintf("%s[%d]", path, i))
-		}
-	case reflect.Map:
-		s.snapshot[path+"_len"] = v.Len()
-		iter := v.MapRange()
-		count := 0
-		for iter.Next() {
-			if count > 5 { break }
-			s.scan(iter.Value(), fmt.Sprintf("%s[map_key_%v]", path, iter.Key().Interface()))
-			count++
-		}
-	default:
-		if v.CanInterface() {
-			s.snapshot[path] = v.Interface()
-		}
-	}
-}
-
-// CheckContamination は、1周目の計算のせいで、2周目（触っていないはずの側）に変化が飛び火したかを暴く
-func (s *HbtpCrossSpy) CheckContamination(afterClean *HbtpCrossSpy) {
-	fmt.Println("\n🚨 ===== [CROSS-INSTANCE CONTAMINATION REPORT] =====")
-	contaminated := false
-
-	for path, bVal := range s.snapshot {
-		aVal, exists := afterClean.snapshot[path]
-		if !exists { continue }
-
-		if !reflect.DeepEqual(bVal, aVal) {
-			fmt.Printf("❌ [POINTER LEAK DETECTED] フィールド '%s' が裏で繋がっています！\n", path)
-			fmt.Printf("   ├─ 計算前の状態: %v\n", bVal)
-			fmt.Printf("   └─ 1周目計算後の状態: %v\n", aVal)
-			contaminated = true
-		}
-	}
-
-	if !contaminated {
-		fmt.Println("✅ [PERFECT ISOLATION] MyShallowCopy されたインスタンス同士は、裏で一切繋がっていません！完全隔離されています。")
-	}
-	fmt.Println("=====================================================\n")
 }
